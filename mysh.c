@@ -45,16 +45,20 @@ int main()
 
     while (state != 1) {
         printf("Enter input: ");
+
+        // READ
         fgets(input, sizeof(input), stdin); 
 
         if (strcmp(input, "exit\n") == 0) {
             state = 1;
             break; // Exit the loop
         }
-
-        // Read
         token = strtok(input, " ");
+
+        // PARSE
         parse(token, line);
+
+        // EXECUTE
         execute(line);
 
     }
