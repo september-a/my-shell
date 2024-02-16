@@ -27,9 +27,13 @@ char* getCommandin(char **my_line){
 
     for (i = 0; cmd_options[i] != NULL; i++) {
         if (strcmp(my_command, cmd_options[i]) == 0) {
-            printf("command found\n");
+            // Command found!
             return my_command;
-        }
+        } 
+    }
+    if (strstr(my_command, "PS1") != 0) {
+        my_command = "PS1";
+        return my_command;
     }
 
     return "NA";
@@ -46,6 +50,88 @@ void parse(char *token, char **my_line){
     }
     my_line[i] = 0;
 
+}
+
+int checkOption(char **my_line){
+
+    char *optionVal = "-n";
+
+    if (my_line[1] == optionVal){
+        printf("option found\n");
+        return 1;
+    }
+    else{
+        return 0;
+    }
+}
+
+void my_echo(char **my_line){
+    // My echo function
+    
+    int i;
+    int option_flag = checkOption(my_line);
+
+    if (option_flag == 0){
+        for (i = 1; my_line[i] != NULL; ++i)
+        {
+            printf("%s ", my_line[i]);
+        }
+        printf("\n");
+    }
+    else{
+        printf("option raised\n");
+    }
+    
+}
+
+void removeNL(char **my_line){
+    int i;
+
+    for (i = 0; my_line[i] != NULL; ++i) {
+        // Find the newline character and replace it with null terminator
+        char *newline = strchr(my_line[i], '\n');
+        if (newline != NULL)
+            *newline = '\0';
+    }
+}
+
+int my_PS1(char **my_line, char *prompt){
+    int i;
+    int total_length = 1;
+
+    // Calculate the total length needed for line_str
+    for (i = 0; my_line[i] != NULL; i++) {
+        total_length += strlen(my_line[i]);
+    }
+
+    char line_str[total_length];
+
+    for (i = 0; my_line[i] != NULL; i++) {
+        strcat(line_str, my_line[i]);
+        strcat(line_str, " ");
+    }
+
+    printf("PS1 will be performed on: %s\n", line_str);
+
+    return 0;
+}
+
+void execute(char **my_line, char *my_command, int *state_flag, char *prompt_value){
+
+    if (strcmp(my_command, "echo") == 0){
+        my_echo(my_line);
+    }
+    else if (strcmp(my_command, "PS1") == 0){
+        if (my_PS1(my_line, prompt_value) != 0){
+            // command not successful
+            *state_flag = 1;
+        }
+    }
+    else if (strcmp(my_command, "exit") == 0){
+        *state_flag = -1;
+    }
+
+    printf("\n");
 
 }
 
@@ -61,36 +147,42 @@ int main()
     
     // end loop
     
-    int state = 0;
+    int state;
+    int *state_p = &state;
     char input[256]; // Assuming a maximum input length of 256 characters
 
     char *line[MAX_ARG];
-    char *options[MAX_ARG];
-    char *arguments[MAX_ARG];
 
     char *token;
     char *command;
 
-    while (state != 1) {
-        printf("Enter input: ");
+    char *prompt = "$";
+
+    while (state != -1) {
+        state = 0;
+        printf("%s ", prompt);
 
         // READ
         fgets(input, sizeof(input), stdin); 
 
+        /*
         if (strcmp(input, "exit\n") == 0) {
             state = 1;
             break; // Exit the loop
         }
+        */
+
         token = strtok(input, " ");
 
         // PARSE
         parse(token, line);
+        removeNL(line);
         command = getCommandin(line);
 
         // EXECUTE
-        print(line);
-
-        printf("my command is %s\n", command);
+        //print(line);
+        execute(line, command, state_p, prompt);
+            
 
     }
 
