@@ -20,6 +20,11 @@ char* getCommandin(char **my_line){
     char* cmd_options[] = {
         "echo",
         "exit",
+        "cat",
+        "cp",
+        "rm",
+        "mkdir",
+        "rmdir",
         NULL
     };
 
@@ -127,9 +132,43 @@ int my_PS1(char **my_line, char **prompt){
 
     *prompt = strdup(prompt_str);
 
-    printf("PS1 will be performed on: %s\n", *prompt);
+    //printf("PS1 will be performed on: %s\n", *prompt);
 
     return 0;
+}
+
+char* getFilename(char **my_line){
+    char *filename = my_line[1];
+    
+    FILE *file = fopen(filename, "r"); // Open the file for reading
+    if (file == NULL) {
+        printf("Error opening file");
+        return "NA";
+    }
+    else
+    {
+        return filename;
+    }
+    
+}
+
+void my_cat(char **my_line){
+    char* filename = getFilename(my_line);
+    printf("the filename to be used with cat is : %s\n", filename);
+
+    if (strcmp(filename, "NA") != 0){
+        FILE *file = fopen(filename, "r"); // Open the file for reading
+        char buffer[1024]; // Buffer to hold data read from the file
+
+        // Read and print the contents of the file
+        while (fgets(buffer, sizeof(buffer), file) != NULL) {
+            printf("%s", buffer);
+        }
+
+        fclose(file); // Close the file when done
+        printf("\n");
+    }
+
 }
 
 void execute(char **my_line, char *my_command, int *state_flag, char **prompt_value){
@@ -140,8 +179,15 @@ void execute(char **my_line, char *my_command, int *state_flag, char **prompt_va
     else if (strcmp(my_command, "PS1") == 0){
         my_PS1(my_line, prompt_value);
     }
+    else if (strcmp(my_command, "cat") == 0) {
+        my_cat(my_line);
+    }
     else if (strcmp(my_command, "exit") == 0){
         *state_flag = -1;
+    }
+    else
+    {
+        printf("Command not found\n");
     }
 
     printf("\n");
@@ -177,14 +223,6 @@ int main()
 
         // READ
         fgets(input, sizeof(input), stdin); 
-
-        /*
-        if (strcmp(input, "exit\n") == 0) {
-            state = 1;
-            break; // Exit the loop
-        }
-        */
-
         token = strtok(input, " ");
 
         // PARSE
@@ -194,8 +232,7 @@ int main()
 
         // EXECUTE
         //print(line);
-        execute(line, command, state_p, &prompt);
-            
+        execute(line, command, state_p, &prompt);      
 
     }
 
