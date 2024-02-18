@@ -95,7 +95,7 @@ void removeNL(char **my_line){
     }
 }
 
-int my_PS1(char **my_line, char *prompt){
+int my_PS1(char **my_line, char **prompt){
     int i;
     int total_length = 1;
 
@@ -113,7 +113,6 @@ int my_PS1(char **my_line, char *prompt){
 
     int equals_flag = 0;
     char prompt_str[total_length];
-    char *prompt_p = prompt_str;
 
     for (i = 0; line_str[i]; i++) {
         
@@ -126,23 +125,20 @@ int my_PS1(char **my_line, char *prompt){
 
     }
 
-    prompt = prompt_p;
+    *prompt = strdup(prompt_str);
 
-    printf("PS1 will be performed on: %s\n", prompt);
+    printf("PS1 will be performed on: %s\n", *prompt);
 
     return 0;
 }
 
-void execute(char **my_line, char *my_command, int *state_flag, char *prompt_value){
+void execute(char **my_line, char *my_command, int *state_flag, char **prompt_value){
 
     if (strcmp(my_command, "echo") == 0){
         my_echo(my_line);
     }
     else if (strcmp(my_command, "PS1") == 0){
-        if (my_PS1(my_line, prompt_value) != 0){
-            // command not successful
-            *state_flag = 1;
-        }
+        my_PS1(my_line, prompt_value);
     }
     else if (strcmp(my_command, "exit") == 0){
         *state_flag = -1;
@@ -173,7 +169,7 @@ int main()
     char *token;
     char *command;
 
-    char *prompt = "$";
+    char *prompt = "$ ";
 
     while (state != -1) {
         state = 0;
@@ -198,7 +194,7 @@ int main()
 
         // EXECUTE
         //print(line);
-        execute(line, command, state_p, prompt);
+        execute(line, command, state_p, &prompt);
             
 
     }
