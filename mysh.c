@@ -137,9 +137,7 @@ int my_PS1(char **my_line, char **prompt){
     return 0;
 }
 
-char* getFilename(char **my_line){
-    char *filename = my_line[1];
-    
+char* getFilename(char *filename){
     FILE *file = fopen(filename, "r"); // Open the file for reading
     if (file == NULL) {
         printf("Error opening file");
@@ -153,8 +151,8 @@ char* getFilename(char **my_line){
 }
 
 void my_cat(char **my_line){
-    char* filename = getFilename(my_line);
-    printf("the filename to be used with cat is : %s\n", filename);
+    char* filename = my_line[1];
+    filename = getFilename(filename);
 
     if (strcmp(filename, "NA") != 0){
         FILE *file = fopen(filename, "r"); // Open the file for reading
@@ -171,6 +169,34 @@ void my_cat(char **my_line){
 
 }
 
+void my_rm(char **my_line){
+    char* filename = my_line[1];
+    filename = getFilename(filename);
+
+    printf("\nrm will be done on this: %s", filename);
+
+    if (strcmp(filename, "NA") != 0) {
+        // do something
+
+    }
+
+}
+
+void my_cp(char **my_line){
+    char* source = my_line[1];
+    source = getFilename(source);
+    char* dest = my_line[2];
+    dest = getFilename(dest);
+
+    printf("\ncp will be done on this %s and this %s", source, dest);
+
+    if ((strcmp(source, "NA") != 0) && (strcmp(dest, "NA"))) {
+        // do something
+
+    }
+
+}
+
 void execute(char **my_line, char *my_command, int *state_flag, char **prompt_value){
 
     if (strcmp(my_command, "echo") == 0){
@@ -181,6 +207,12 @@ void execute(char **my_line, char *my_command, int *state_flag, char **prompt_va
     }
     else if (strcmp(my_command, "cat") == 0) {
         my_cat(my_line);
+    }
+    else if (strcmp(my_command, "cp") == 0) {
+        my_cp(my_line);
+    }
+    else if (strcmp(my_command, "rm") == 0) {
+        my_rm(my_line);
     }
     else if (strcmp(my_command, "exit") == 0){
         *state_flag = -1;
