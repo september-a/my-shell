@@ -111,7 +111,24 @@ int my_PS1(char **my_line, char *prompt){
         strcat(line_str, " ");
     }
 
-    printf("PS1 will be performed on: %s\n", line_str);
+    int equals_flag = 0;
+    char prompt_str[total_length];
+    char *prompt_p = prompt_str;
+
+    for (i = 0; line_str[i]; i++) {
+        
+        if (equals_flag == 1 && line_str[i] != '"') {
+            strncat(prompt_str, &line_str[i], 1);
+        }
+        if (line_str[i] == '=') {
+            equals_flag = 1;
+        }
+
+    }
+
+    prompt = prompt_p;
+
+    printf("PS1 will be performed on: %s\n", prompt);
 
     return 0;
 }
