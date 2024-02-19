@@ -137,22 +137,25 @@ int my_PS1(char **my_line, char **prompt){
     return 0;
 }
 
-char* getFilename(char *filename){
+char* checkFilename(char *filename){
     FILE *file = fopen(filename, "r"); // Open the file for reading
     if (file == NULL) {
         printf("Error opening file");
+        fclose(file);
         return "NA";
     }
     else
     {
+        fclose(file);
         return filename;
     }
+    
     
 }
 
 void my_cat(char **my_line){
     char* filename = my_line[1];
-    filename = getFilename(filename);
+    filename = checkFilename(filename);
 
     if (strcmp(filename, "NA") != 0){
         FILE *file = fopen(filename, "r"); // Open the file for reading
@@ -169,14 +172,33 @@ void my_cat(char **my_line){
 
 }
 
+char* createFile(char *filename){
+    FILE *file = fopen(filename, "w");
+    if (file == NULL) {
+        printf("Error creating file");
+        fclose(file);
+        return "NA";
+    }
+    else
+    {
+        fclose(file);
+        return filename;
+    }
+    fclose(file);
+}
+
 void my_rm(char **my_line){
     char* filename = my_line[1];
-    filename = getFilename(filename);
+    filename = checkFilename(filename);
 
     printf("\nrm will be done on this: %s", filename);
 
     if (strcmp(filename, "NA") != 0) {
-        // do something
+        if (remove(filename) == 0) {
+            printf("File %s deleted successfully.\n", filename);
+        } else {
+            printf("Error deleting the file");
+        }
 
     }
 
@@ -184,16 +206,26 @@ void my_rm(char **my_line){
 
 void my_cp(char **my_line){
     char* source = my_line[1];
-    source = getFilename(source);
+    source = checkFilename(source);
     char* dest = my_line[2];
-    dest = getFilename(dest);
+    dest = createFile(dest);
+    char buffer[1024];
+    size_t bytes_read;
 
     printf("\ncp will be done on this %s and this %s", source, dest);
 
     if ((strcmp(source, "NA") != 0) && (strcmp(dest, "NA"))) {
-        // do something
+        FILE *file_s = fopen(source, "rb"); // Open the file for reading
+        FILE *file_d = fopen(dest, "wb"); // Open the file for reading
+        while ((bytes_read = fread(buffer, 1, 1024, file_s)) > 0) {
+            fwrite(buffer, 1, bytes_read, file_d);
+        }
+        fclose(file_s);
+        fclose(file_d);
 
     }
+
+    
 
 }
 
