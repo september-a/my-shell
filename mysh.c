@@ -1,10 +1,15 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #define MAX_ARG 20
+#define BUFFERSIZE 2048
 
 
 void print(char **my_line){
+    // print for debugging
     int i;
 
     for(i = 0; my_line[i]; ++i)
@@ -17,6 +22,7 @@ char* getCommandin(char **my_line){
 
     int i;
 
+    // Array of commands that can be used
     char* cmd_options[] = {
         "echo",
         "exit",
@@ -58,7 +64,7 @@ void parse(char *token, char **my_line){
 }
 
 int checkOption(char **my_line){
-
+    // not fully functional
     char *optionVal = "-n";
 
     if (my_line[1] == optionVal){
@@ -72,8 +78,9 @@ int checkOption(char **my_line){
 
 void my_echo(char **my_line){
     // My echo function
-    
     int i;
+
+    // option flag check - not fully functional
     int option_flag = checkOption(my_line);
 
     if (option_flag == 0){
@@ -90,6 +97,8 @@ void my_echo(char **my_line){
 }
 
 void removeNL(char **my_line){
+
+    // Inspired from class handout
     int i;
 
     for (i = 0; my_line[i] != NULL; ++i) {
@@ -109,13 +118,17 @@ int my_PS1(char **my_line, char **prompt){
         total_length += strlen(my_line[i]);
     }
 
+    // instantiate line_str
     char line_str[total_length];
 
+    // cp contents in my_line to line_str
     for (i = 0; my_line[i] != NULL; i++) {
         strcat(line_str, my_line[i]);
         strcat(line_str, " ");
     }
 
+
+    // put values after equals into prompt_str - excluding quotes
     int equals_flag = 0;
     char prompt_str[total_length];
 
@@ -130,6 +143,7 @@ int my_PS1(char **my_line, char **prompt){
 
     }
 
+    // update prompt
     *prompt = strdup(prompt_str);
 
     //printf("PS1 will be performed on: %s\n", *prompt);
@@ -138,6 +152,8 @@ int my_PS1(char **my_line, char **prompt){
 }
 
 char* checkFilename(char *filename){
+    // checks if file exists. Used in instructions where a specific file path is needed. 
+
     FILE *file = fopen(filename, "r"); // Open the file for reading
     if (file == NULL) {
         printf("Error opening file");
@@ -159,7 +175,7 @@ void my_cat(char **my_line){
 
     if (strcmp(filename, "NA") != 0){
         FILE *file = fopen(filename, "r"); // Open the file for reading
-        char buffer[1024]; // Buffer to hold data read from the file
+        char buffer[BUFFERSIZE]; // Buffer to hold data read from the file
 
         // Read and print the contents of the file
         while (fgets(buffer, sizeof(buffer), file) != NULL) {
@@ -191,33 +207,37 @@ void my_rm(char **my_line){
     char* filename = my_line[1];
     filename = checkFilename(filename);
 
-    printf("\nrm will be done on this: %s", filename);
+    //printf("\nrm will be done on this: %s", filename);
 
     if (strcmp(filename, "NA") != 0) {
-        if (remove(filename) == 0) {
-            printf("File %s deleted successfully.\n", filename);
-        } else {
+        // removing the file
+        if (remove(filename) != 0) {
             printf("Error deleting the file");
         }
 
     }
+    printf("\n");
 
 }
 
 void my_cp(char **my_line){
+
+    // parsing arguments - separtating into source and destination
     char* source = my_line[1];
     source = checkFilename(source);
     char* dest = my_line[2];
-    dest = createFile(dest);
-    char buffer[1024];
+    dest = createFile(dest);    // need to create file before copying to it
+
+    // buffer to copy contents from one to the other
+    char buffer[BUFFERSIZE];
     size_t bytes_read;
 
-    printf("\ncp will be done on this %s and this %s", source, dest);
+    //printf("\ncp will be done on this %s and this %s", source, dest);
 
     if ((strcmp(source, "NA") != 0) && (strcmp(dest, "NA"))) {
         FILE *file_s = fopen(source, "rb"); // Open the file for reading
         FILE *file_d = fopen(dest, "wb"); // Open the file for reading
-        while ((bytes_read = fread(buffer, 1, 1024, file_s)) > 0) {
+        while ((bytes_read = fread(buffer, 1, BUFFERSIZE, file_s)) > 0) {
             fwrite(buffer, 1, bytes_read, file_d);
         }
         fclose(file_s);
@@ -225,19 +245,42 @@ void my_cp(char **my_line){
 
     }
 
-    
+    printf("\n");
 
 }
 
 void my_mkdir(char **my_line) {
-    printf("my mkdir function");
+    //printf("my mkdir function\n");
+
+    // making the directory
+    char *directory_name = my_line[1];
+
+    int status = mkdir(directory_name, 777);
+
+    if (status != 0) {
+        perror("Error creating directory\n");
+    }
+
+    printf("\n");
 }
 
 void my_rmdir(char **my_line) {
-    printf("my rmdir function");
+    const char* directory_name = my_line[1];
+
+    // Remove the directory
+    int status = rmdir(directory_name);
+
+    if (status != 0) {
+        perror("Error removing directory\n");
+    }
+
+    printf("\n");
+
 }
 
 void execute(char **my_line, char *my_command, int *state_flag, char **prompt_value){
+
+    // Big if statement
 
     if (strcmp(my_command, "echo") == 0){
         my_echo(my_line);
@@ -277,22 +320,30 @@ int main()
     printf("Welcome to My Shell!\n");
     printf("CS 390 Programming Assignment 1 | September Abbott\n\n");
     
+    // Structure of Main
     // begin loop
         // read
         // parse
         // execute
-    
     // end loop
     
+    // state used for ending program upon "exit"
     int state;
     int *state_p = &state;
-    char input[256]; // Assuming a maximum input length of 256 characters
 
+    // max input is the same as buffer
+    char input[BUFFERSIZE];
+
+    // a line can only have 20 arguments
     char *line[MAX_ARG];
 
+    // tokens delimited by spaces
     char *token;
+
+    // command (first argument is saved)
     char *command;
 
+    // beginning prompt is $ - as stated in assignment hand out
     char *prompt = "$ ";
 
     while (state != -1) {
