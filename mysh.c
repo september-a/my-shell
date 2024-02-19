@@ -229,6 +229,14 @@ void my_cp(char **my_line){
 
 }
 
+void my_mkdir(char **my_line) {
+    printf("my mkdir function");
+}
+
+void my_rmdir(char **my_line) {
+    printf("my rmdir function");
+}
+
 void execute(char **my_line, char *my_command, int *state_flag, char **prompt_value){
 
     if (strcmp(my_command, "echo") == 0){
@@ -245,6 +253,12 @@ void execute(char **my_line, char *my_command, int *state_flag, char **prompt_va
     }
     else if (strcmp(my_command, "rm") == 0) {
         my_rm(my_line);
+    }
+    else if (strcmp(my_command, "mkdir") == 0) {
+        my_mkdir(my_line);
+    }
+    else if(strcmp(my_command, "rmdir") == 0) {
+        my_rmdir(my_line);
     }
     else if (strcmp(my_command, "exit") == 0){
         *state_flag = -1;
