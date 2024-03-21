@@ -289,12 +289,10 @@ void *find_function(char *function_name){
         return NULL;
     }
 
-    strcat(function_name, ".c");
-
     char *token = strtok(path_value, ":");
     while (token != NULL) {
         char function_path[BUFFERSIZE];
-        printf(function_path, sizeof(function_path), "%s/%s", token, function_name);
+        snprintf(function_path, sizeof(function_path), "%s/%s", token, function_name);
 
         // Check if the file exists and is executable
         if (access(function_path, X_OK) == 0) {
