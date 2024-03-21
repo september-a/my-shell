@@ -47,7 +47,7 @@ char* getCommandin(char **my_line){
         return my_command;
     }
 
-    return "NA";
+    return my_line[0];
 }
 
 void parse(char *token, char **my_line){
@@ -278,6 +278,35 @@ void my_rmdir(char **my_line) {
 
 }
 
+int _execv(const char *path, char *const argv){
+    return 1;
+}
+
+void *find_function(char *function_name){
+    char *path_value = getenv("PATH");
+    if (path_value == NULL) {
+        fprintf(stderr, "Error: PATH environment variable not found.\n");
+        return NULL;
+    }
+
+    strcat(function_name, ".c");
+
+    char *token = strtok(path_value, ":");
+    while (token != NULL) {
+        char function_path[BUFFERSIZE];
+        printf(function_path, sizeof(function_path), "%s/%s", token, function_name);
+
+        // Check if the file exists and is executable
+        if (access(function_path, X_OK) == 0) {
+            return strdup(function_path);
+        }
+
+        token = strtok(NULL, ":");
+    }
+
+    return NULL;
+}
+
 void execute(char **my_line, char *my_command, int *state_flag, char **prompt_value){
 
     // Big if statement
@@ -308,7 +337,14 @@ void execute(char **my_line, char *my_command, int *state_flag, char **prompt_va
     }
     else
     {
-        printf("Command not found\n");
+        char *function_path = find_function(my_command);
+        if (function_path != NULL) {
+            printf("Found function '%s' at: %s\n", my_command, function_path);
+            free(function_path);
+        } else {
+            printf("Function '%s' not found in PATH.\n", my_command);
+    }
+
     }
 
     printf("\n");
@@ -319,7 +355,8 @@ int main()
 {
     printf("Welcome to My Shell!\n");
     printf("CS 390 Programming Assignment 1 | September Abbott\n\n");
-    
+    // printf("%s", getenv("PATH"));
+
     // Structure of Main
     // begin loop
         // read
