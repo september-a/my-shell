@@ -338,6 +338,7 @@ void execute(char **my_line, char *my_command, int *state_flag, char **prompt_va
         char *function_path = find_function(my_command);
         if (function_path != NULL) {
             printf("Found function '%s' at: %s\n", my_command, function_path);
+            system(function_path);
             free(function_path);
         } else {
             printf("Function '%s' not found in PATH.\n", my_command);
