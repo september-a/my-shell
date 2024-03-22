@@ -280,20 +280,27 @@ void my_rmdir(char **my_line) {
 }
 
 int _execv(const char *path, char *const argv[]){
-    printf("%s\n", path);
 
     int i = 0;
-    for (i = 0; argv[i] != NULL; i++) {
-        printf("%s\n", argv[i]);
-    }
+    for (i = 0; argv[i] != NULL; i++);
 
     char command[BUFFERSIZE]; 
-    int argc = sizeof(&argv) / sizeof(argv[0]);
-    snprintf(command, sizeof(command), "%s %s %s", path, argv[1], argc > 2 ? argv[2] : "");
-
-    printf("%s\n", command);
-
-    system(command);
+    if (i == 1) {
+        snprintf(command, sizeof(command), "%s", path);
+        system(command);
+    }
+    else if (i == 2) {
+        // If there's only one argument, construct the command without the second argument
+        snprintf(command, sizeof(command), "%s %s", path, argv[1]);
+        system(command);
+    } else if (i == 3) {
+        // If there are two arguments, construct the command with both arguments
+        snprintf(command, sizeof(command), "%s %s %s", path, argv[1], argv[2]);
+        system(command);
+    }
+    else
+        printf("Improper use of myls");
+        return 0;
 
     return 1;
 }
@@ -363,7 +370,6 @@ void execute(char **my_line, char *my_command, int *state_flag, char **prompt_va
     else
     {
         char *path = find_function(my_line);
-        print(my_line);
         if (path != NULL)
         {
             _execv(path, my_line);
