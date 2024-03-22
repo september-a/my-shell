@@ -300,14 +300,14 @@ int _execv(const char *path, char *const argv[]){
 
 char* find_function(char **my_line){
     // Lets find the path from PATH!
-    char *path_value = getenv("PATH");
+    const char *path_value = getenv("PATH");
     if (path_value == NULL) {
         fprintf(stderr, "Error: PATH environment variable not found.\n");
         return NULL;
     }
     
     // Tokenizing and searching PATH
-    char *new_token = strtok(path_value, ":");
+    char *new_token = strtok(strdup(path_value), ":");
     while (new_token != NULL) {
 
         char *function_path = malloc(strlen(new_token) + strlen("/") + strlen(my_line[0]) + 1);
@@ -363,6 +363,7 @@ void execute(char **my_line, char *my_command, int *state_flag, char **prompt_va
     else
     {
         char *path = find_function(my_line);
+        print(my_line);
         if (path != NULL)
         {
             _execv(path, my_line);
