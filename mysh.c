@@ -279,25 +279,41 @@ void my_rmdir(char **my_line) {
 
 }
 
-int _execv(const char *path, char *const argv){
+int _execv(const char *path, char *const argv[]){
+    printf("%s\n", path);
+
+    int i = 0;
+    for (i = 0; argv[i] != NULL; i++) {
+        printf("%s\n", argv[i]);
+    }
+
+    char command[BUFFERSIZE]; 
+    int argc = sizeof(&argv) / sizeof(argv[0]);
+    snprintf(command, sizeof(command), "%s %s %s", path, argv[1], argc > 2 ? argv[2] : "");
+
+    printf("%s\n", command);
+
+    system(command);
+
     return 1;
 }
 
-void find_function(char **my_line){
-    printf("I made it here\n");
+char* find_function(char **my_line){
+    // Lets find the path from PATH!
     char *path_value = getenv("PATH");
     if (path_value == NULL) {
         fprintf(stderr, "Error: PATH environment variable not found.\n");
+        return NULL;
     }
     
-
+    // Tokenizing and searching PATH
     char *new_token = strtok(path_value, ":");
     while (new_token != NULL) {
 
         char *function_path = malloc(strlen(new_token) + strlen("/") + strlen(my_line[0]) + 1);
         if (function_path == NULL) {
             fprintf(stderr, "Error: Memory allocation failed.\n");
-            return; // Return if memory allocation failed
+            return NULL; // Return if memory allocation failed
         }
         
         strcpy(function_path, new_token);
@@ -307,11 +323,12 @@ void find_function(char **my_line){
 
         // Check if the file exists and is executable
         if (access(function_path, X_OK) == 0) {
-            printf("%s", function_path);
+            return function_path;
         }
 
         new_token = strtok(NULL, ":");
     }
+    return NULL;
 
 }
 
@@ -345,10 +362,16 @@ void execute(char **my_line, char *my_command, int *state_flag, char **prompt_va
     }
     else
     {
-        print(my_line);
-        find_function(my_line);
-        print(my_line);
-
+        char *path = find_function(my_line);
+        if (path != NULL)
+        {
+            _execv(path, my_line);
+        }
+        else
+        {
+            printf("Command not found\n");
+        }
+        
     }
 
     printf("\n");
