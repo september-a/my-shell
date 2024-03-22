@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <limits.h>
 
 #define MAX_ARG 20
 #define BUFFERSIZE 2048
@@ -282,27 +283,36 @@ int _execv(const char *path, char *const argv){
     return 1;
 }
 
-void *find_function(char *function_name){
+void find_function(char **my_line){
+    printf("I made it here\n");
     char *path_value = getenv("PATH");
     if (path_value == NULL) {
         fprintf(stderr, "Error: PATH environment variable not found.\n");
-        return NULL;
     }
+    
 
-    char *token = strtok(path_value, ":");
-    while (token != NULL) {
-        char function_path[BUFFERSIZE];
-        snprintf(function_path, sizeof(function_path), "%s/%s", token, function_name);
+    char *new_token = strtok(path_value, ":");
+    while (new_token != NULL) {
+
+        char *function_path = malloc(strlen(new_token) + strlen("/") + strlen(my_line[0]) + 1);
+        if (function_path == NULL) {
+            fprintf(stderr, "Error: Memory allocation failed.\n");
+            return; // Return if memory allocation failed
+        }
+        
+        strcpy(function_path, new_token);
+        strcat(function_path, "/");
+        strcat(function_path, my_line[0]);
+       
 
         // Check if the file exists and is executable
         if (access(function_path, X_OK) == 0) {
-            return strdup(function_path);
+            printf("%s", function_path);
         }
 
-        token = strtok(NULL, ":");
+        new_token = strtok(NULL, ":");
     }
 
-    return NULL;
 }
 
 void execute(char **my_line, char *my_command, int *state_flag, char **prompt_value){
@@ -335,14 +345,9 @@ void execute(char **my_line, char *my_command, int *state_flag, char **prompt_va
     }
     else
     {
-        char *function_path = find_function(my_command);
-        if (function_path != NULL) {
-            printf("Found function '%s' at: %s\n", my_command, function_path);
-            system(function_path);
-            free(function_path);
-        } else {
-            printf("Function '%s' not found in PATH.\n", my_command);
-    }
+        print(my_line);
+        find_function(my_line);
+        print(my_line);
 
     }
 
@@ -354,7 +359,6 @@ int main()
 {
     printf("Welcome to My Shell!\n");
     printf("CS 390 Programming Assignment 1 | September Abbott\n\n");
-    // printf("%s", getenv("PATH"));
 
     // Structure of Main
     // begin loop
